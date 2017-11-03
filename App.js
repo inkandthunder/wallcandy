@@ -17,7 +17,7 @@ import {
 import RandManager from './RandManager.js';
 import Swiper from 'react-native-swiper';
 import NetworkImage from 'react-native-image-progress';
-import Progress from 'react-native-progress';
+import * as Progress from 'react-native-progress';
 import ProgressBar from 'react-native-progress/Bar';
 
 const instructions = Platform.select({
@@ -118,8 +118,14 @@ var {wallsJSON, isLoading} = this.state;
               
 <NetworkImage 
   source={{ uri: `https://unsplash.it/${wallpaper.width}/${wallpaper.height}?image=${wallpaper.id}` }} 
-  indicator={ProgressBar} 
+  indicator={Progress.CircleSnail} 
+   indicatorProps={{
+    color: 'rgba(255, 255, 255)',
+    size: 80,
+    thickness: 7 
+  }}           
   style={styles.wallpaperImage}>
+              
         <Text style={styles.label}>Photo by</Text>
         <Text style={styles.label_authorName}>{wallpaper.author}</Text>
               </NetworkImage>
@@ -168,9 +174,9 @@ const styles = StyleSheet.create({
   //flex: 1,
   width: width,
   height: height,
-  //backgroundColor: '#fff'
+  backgroundColor: '#000'
 },
-    label: {
+label: {
   position: 'absolute',
   color: '#fff',
   fontSize: 13,
