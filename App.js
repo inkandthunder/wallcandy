@@ -10,11 +10,15 @@ import {
   Platform,
   ActivityIndicator,
   StyleSheet,
+  Dimensions,
   Text,
   View
 } from 'react-native';
 import RandManager from './RandManager.js';
 import Swiper from 'react-native-swiper';
+import NetworkImage from 'react-native-image-progress';
+import Progress from 'react-native-progress';
+import ProgressBar from 'react-native-progress/Bar';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' +
@@ -23,6 +27,7 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
+let {width, height} = Dimensions.get('window');
 const NUM_WALLPAPERS = 5;
 
 export default class App extends Component<{}> {
@@ -96,16 +101,34 @@ var {wallsJSON, isLoading} = this.state;
 
         dot={<View style={{backgroundColor:'rgba(255,255,255,.4)', width: 8, height: 8,borderRadius: 10, marginLeft: 3, marginRight: 3, marginTop: 3, marginBottom: 3,}} />}
 
-activeDot={<View style={{backgroundColor: '#fff', width: 13, height: 13, borderRadius: 7, marginLeft: 7, marginRight: 7}} />}
+        activeDot={<View style={{backgroundColor: '#fff', width: 13, height: 13, borderRadius: 7, marginLeft: 7, marginRight: 7}} />}
 
         loop={false} 
         onMomentumScrollEnd={this.onMomentumScrollEnd}>
         
         {wallsJSON.map((wallpaper, index) => {
           return(
-            <Text key={index}>
+              
+              
+      <View key={index}>
+         
+
+
+
+              
+<NetworkImage 
+  source={{ uri: `https://unsplash.it/${wallpaper.width}/${wallpaper.height}?image=${wallpaper.id}` }} 
+  indicator={ProgressBar} 
+  style={styles.wallpaperImage}>
+        <Text style={styles.label}>Photo by</Text>
+        <Text style={styles.label_authorName}>{wallpaper.author}</Text>
+              </NetworkImage>
+
+      </View>
+              
+            /*<Text key={index}>
               {wallpaper.author}
-            </Text>
+            </Text>*/
           );
         })}
        
@@ -141,4 +164,33 @@ const styles = StyleSheet.create({
     color: '#333333',
     marginBottom: 5,
   },
+ wallpaperImage: {
+  //flex: 1,
+  width: width,
+  height: height,
+  //backgroundColor: '#fff'
+},
+    label: {
+  position: 'absolute',
+  color: '#fff',
+  fontSize: 13,
+  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  padding: 2,
+  paddingLeft: 5,
+  top: 20,
+  left: 20,
+  width: width/2
+},
+label_authorName: {
+  position: 'absolute',
+  color: '#fff',
+  fontSize: 15,
+  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  padding: 2,
+  paddingLeft: 5,
+  top: 41,
+  left: 20,
+  fontWeight: 'bold',
+  width: width/2
+}
 });
