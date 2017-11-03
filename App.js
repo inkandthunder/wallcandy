@@ -12,9 +12,11 @@ import {
   StyleSheet,
   Dimensions,
   Text,
+  PanResponder,  
   View
 } from 'react-native';
 import RandManager from './RandManager.js';
+import Utils from './Utils.js';
 import Swiper from 'react-native-swiper';
 import NetworkImage from 'react-native-image-progress';
 import * as Progress from 'react-native-progress';
@@ -29,6 +31,8 @@ const instructions = Platform.select({
 
 let {width, height} = Dimensions.get('window');
 const NUM_WALLPAPERS = 5;
+const DOUBLE_TAP_DELAY = 300; // milliseconds
+const DOUBLE_TAP_RADIUS = 20;
 
 export default class App extends Component<{}> {
 
@@ -39,6 +43,13 @@ export default class App extends Component<{}> {
       wallsJSON: [],
       isLoading: true
     };
+    this.imagePanResponder = {};
+    this.prevTouchInfo = {
+      prevTouchX: 0,
+      prevTouchY: 0,
+      prevTouchTimeStamp: 0
+};
+      this.handlePanResponderGrant = this.handlePanResponderGrant.bind(this);
   }
 
   fetchWallsJSON() {
@@ -92,6 +103,45 @@ renderLoadingMessage() {
       </View>
     )}
 
+componentWillMount() {
+    this.imagePanResponder = PanResponder.create({
+      onStartShouldSetPanResponder: this.handleStartShouldSetPanResponder,
+      onPanResponderGrant: this.handlePanResponderGrant,
+      onPanResponderRelease: this.handlePanResponderEnd,
+      onPanResponderTerminate: this.handlePanResponderEnd
+    });
+  }
+
+handleStartShouldSetPanResponder(e, gestureState) {
+    return true;
+}
+
+handlePanResponderGrant(e, gestureState) {
+  //console.log('Finger touched the image');
+    var currentTouchTimeStamp = Date.now();
+
+  if( this.isDoubleTap(currentTouchTimeStamp, gestureState) ) 
+    console.log('Double tap detected');
+
+  this.prevTouchInfo = {
+    prevTouchX: gestureState.x0,
+    prevTouchY: gestureState.y0,
+    prevTouchTimeStamp: currentTouchTimeStamp
+  };
+}
+
+handlePanResponderEnd(e, gestureState) {
+  console.log('Finger pulled up from the image');
+}
+
+isDoubleTap(currentTouchTimeStamp, {x0, y0}) {
+  var {prevTouchX, prevTouchY, prevTouchTimeStamp} = this.prevTouchInfo;
+  var dt = currentTouchTimeStamp - prevTouchTimeStamp;
+
+  return (dt < DOUBLE_TAP_DELAY && Utils.distance(prevTouchX, prevTouchY, x0, y0) < DOUBLE_TAP_RADIUS);
+}
+
+
 renderResults() {
 var {wallsJSON, isLoading} = this.state;
   if( !isLoading ) {
@@ -122,9 +172,10 @@ var {wallsJSON, isLoading} = this.state;
    indicatorProps={{
     color: 'rgba(255, 255, 255)',
     size: 80,
-    thickness: 7 
+    thickness: 3 
   }}           
-  style={styles.wallpaperImage}>
+  style={styles.wallpaperImage}
+              {...this.imagePanResponder.panHandlers}>
               
         <Text style={styles.label}>Photo by</Text>
         <Text style={styles.label_authorName}>{wallpaper.author}</Text>
@@ -180,7 +231,7 @@ label: {
   position: 'absolute',
   color: '#fff',
   fontSize: 13,
-  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
   padding: 2,
   paddingLeft: 5,
   top: 20,
@@ -191,7 +242,7 @@ label_authorName: {
   position: 'absolute',
   color: '#fff',
   fontSize: 15,
-  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
   padding: 2,
   paddingLeft: 5,
   top: 41,
